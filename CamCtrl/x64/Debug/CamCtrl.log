@@ -1,0 +1,17 @@
+﻿  CamCtrl.cpp
+d:\program files\opencv\tools\build_syk\install\include\opencv2\core\mat.hpp(1960): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\program files\opencv\tools\build_syk\install\include\opencv2\core\persistence.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\program files\opencv\tools\build_syk\install\include\opencv2\core\utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\program files\opencv\tools\build_syk\install\include\opencv2\core\utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+d:\program files\opencv\tools\build_syk\install\include\opencv2\imgproc.hpp(617): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(12): warning C4305: “初始化”: 从“double”到“float”截断
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(51): warning C4244: “=”: 从“float”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(52): warning C4244: “=”: 从“float”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(53): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(54): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(99): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(108): warning C4244: “+=”: 从“float”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(113): warning C4244: “-=”: 从“float”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(118): warning C4244: “+=”: 从“float”转换到“int”，可能丢失数据
+e:\cloud\research\vision\camctrl\camctrl\camctrl.h(123): warning C4244: “-=”: 从“float”转换到“int”，可能丢失数据
+  CamCtrl.vcxproj -> E:\Cloud\Research\Vision\CamCtrl\x64\Debug\CamCtrl.exe
