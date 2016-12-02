@@ -25,14 +25,14 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	const string winName = "image";
-	namedWindow(winName, WINDOW_NORMAL);
+	namedWindow(winName, WINDOW_AUTOSIZE);
 
 	camctrl.setImageAndWinName(image, winName);
 	camctrl.showImage();
 	for (;;)
 	{
 		int c = waitKey(0);
-		int flags;
+		int flags = 100;
 		switch ((char)c)
 		{
 		case 'd':
@@ -58,6 +58,9 @@ int main(int argc, char** argv)
 		case 'i':
 			cout << "Zoom out ..." << endl;
 			flags = ZOOMOUT;
+			break;
+		default:
+			cout << "Wrong button ..." << endl;
 			break;
 		}
 		camctrl.moveWin(flags);

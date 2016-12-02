@@ -11,8 +11,8 @@ const Scalar BLACK = Scalar(0, 0, 0);
 
 const float moveratio = 0.1;
 
-const float WinWidthMax = 1000;
-const float WinHeightMax = 1000;
+const float WinWidthMax = 700;
+const float WinHeightMax = 700;
 
 enum WindowMoveFlags
 {
@@ -33,8 +33,9 @@ public:
 	void moveWin(int flags);
 
 private:
-	Mat SrcImg;			//用于仿真的图像
+	Mat SrcImg;					//用于仿真的全景图像
 	const string *WinName;		//用于显示的窗口名称
+	Mat WinImage;				//窗口所含图片
 	bool isInitialized;
 
 	Rect ObserveWin;			//用于观测的窗口
@@ -96,7 +97,14 @@ void CamCtrl::showImage() const
 		return;
 	}
 	rectangle(res, Point(ObserveWin.x, ObserveWin.y), Point(ObserveWin.x + WinWidth, ObserveWin.y + WinHeight), RED, 2);
-	imshow(*WinName, res);
+	Mat Roi = res(ObserveWin);
+	Mat Roicopy = Roi.clone();
+	//res(ObserveWin).convertTo(Roi, Roi.type(), 1, 0);
+	//pyrUp(Roi, Roicopy, Size(WinWidthMax*2, WinHeightMax*2));
+	resize(Roi, Roicopy, Size(WinWidthMax, WinHeightMax));
+	imshow(*WinName, Roicopy);
+	//imshow(*WinName, res);
+	
 }
 
 void CamCtrl::moveWin(int flags)
