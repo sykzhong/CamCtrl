@@ -9,10 +9,12 @@ const Scalar LIGHTBLUE = Scalar(255, 255, 160);
 const Scalar GREEN = Scalar(0, 255, 0);
 const Scalar BLACK = Scalar(0, 0, 0);
 
-const float moveratio = 0.1;
+const float moveratio = 0.01;
 
-const float WinWidthMax = 700;
-const float WinHeightMax = 700;
+const float WinWidthMax = 700;		//观测窗口的最大宽
+const float WinHeightMax = 700;		//观测窗口的最大高，这里直接确定了窗口的长宽比
+const float WinWidthMin = 100;
+const float WinHeightMin = WinWidthMin*WinHeightMax / WinWidthMax;
 
 enum WindowMoveFlags
 {
@@ -53,10 +55,12 @@ void CamCtrl::refreshWin()
 	ObserveWin.height = WinHeight;
 	ObserveWin.x = WinCenter.x - 0.5*WinWidth;
 	ObserveWin.y = WinCenter.y - 0.5*WinHeight;
+	WinImage = SrcImg(ObserveWin).clone();
 }
 
 void CamCtrl::reset()
 {
+
 	isInitialized = false;
 	WinWidth = WinWidthMax;		//观测窗口的宽
 	WinHeight = WinHeightMax;		//观测窗口的高
@@ -89,20 +93,35 @@ void CamCtrl::showImage() const
 	Mat res;
 	if (!isInitialized)
 	{
-		SrcImg.copyTo(res);
+		Mat Roi = WinImage.clone();
+				
+		resize(Roi, Roi, Size(WinWidthMax, WinHeightMax));
+		Point center = Point(Roi.cols / 2, Roi.rows / 2);
+		circle(Roi, center, 5, RED, -1);
+		line(Roi, Point(center.x + Roi.cols / 2, center.y),
+			Point(center.x - Roi.cols / 2, center.y), BLUE, 1);
+		line(Roi, Point(center.x, center.y + Roi.rows / 2),
+			Point(center.x, center.y - Roi.rows / 2), BLUE, 1);
+
+		//circle(Roi, WinCenter, 5, RED, -1);
+		//line(Roi, Point(WinCenter.x + WinWidth / 2, WinCenter.y), 
+		//	Point(WinCenter.x - WinWidth / 2, WinCenter.y), BLUE, 1);
+		//line(Roi, Point(WinCenter.x, WinCenter.y + WinHeight / 2),
+		//	Point(WinCenter.x, WinCenter.y - WinHeight / 2), BLUE, 1);
+		imshow(*WinName, Roi);
 	}
 	else
 	{
 		cout << "Initialized" << endl;
 		return;
 	}
-	rectangle(res, Point(ObserveWin.x, ObserveWin.y), Point(ObserveWin.x + WinWidth, ObserveWin.y + WinHeight), RED, 2);
-	Mat Roi = res(ObserveWin);
-	Mat Roicopy = Roi.clone();
+	//rectangle(res, Point(ObserveWin.x, ObserveWin.y), Point(ObserveWin.x + WinWidth + 1, ObserveWin.y + WinHeight + 1), RED, 1);
+	//Mat Roi = res(ObserveWin);
+	//Mat Roicopy = Roi.clone();
 	//res(ObserveWin).convertTo(Roi, Roi.type(), 1, 0);
 	//pyrUp(Roi, Roicopy, Size(WinWidthMax*2, WinHeightMax*2));
-	resize(Roi, Roicopy, Size(WinWidthMax, WinHeightMax));
-	imshow(*WinName, Roicopy);
+	/*resize(Roi, Roicopy, Size(WinWidthMax, WinHeightMax));*/
+	//imshow(*WinName, Roi);
 	//imshow(*WinName, res);
 	
 }
@@ -144,10 +163,10 @@ void CamCtrl::moveWin(int flags)
 	case ZOOMOUT:
 		WinWidth -= WinWidth*moveratio;
 		WinHeight -= WinHeight*moveratio;
-		if (WinWidth <= 1 || WinHeight <= 1)
+		if (WinWidth <= WinWidthMin || WinHeight <= WinHeightMin)
 		{
-			WinWidth = (WinWidthMax <= WinHeightMax) ? 1 : WinWidthMax / WinHeightMax;
-			WinHeight = (WinHeightMax >= WinWidthMax) ? 1 : WinHeightMax / WinWidthMax;
+			WinWidth = (WinWidthMax <= WinHeightMax) ? WinWidthMin : WinWidthMax / WinHeightMax;
+			WinHeight = (WinHeightMax >= WinWidthMax) ? WinHeightMin : WinHeightMax / WinWidthMax;
 		}
 	default:
 		break;

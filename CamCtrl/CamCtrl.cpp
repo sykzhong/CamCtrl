@@ -26,7 +26,6 @@ int main(int argc, char** argv)
 	}
 	const string winName = "image";
 	namedWindow(winName, WINDOW_AUTOSIZE);
-
 	camctrl.setImageAndWinName(image, winName);
 	camctrl.showImage();
 	for (;;)
