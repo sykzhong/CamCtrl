@@ -1,2 +1,7 @@
 CamCtrl/x64
 CamCtrl.VC.VC.opendb
+/x64
+/.vs
+/ipch
+CamCtrl.VC.db
+CamCtrl.sln
