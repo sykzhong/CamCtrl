@@ -1,4 +1,8 @@
 #pragma once
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include <iostream>
 using namespace std;
 using namespace cv;
 
@@ -16,7 +20,25 @@ const float WinHeightMax = 700;		//观测窗口的最大高，这里直接确定了窗口的长宽比
 const float WinWidthMin = 100;
 const float WinHeightMin = WinWidthMin*WinHeightMax / WinWidthMax;
 
-enum WindowMoveFlags
+static void help()
+{
+	cout << "\nThis program aims to control the move of the camera, \n"
+		"and then transform the target image to other program.\n"
+		"Call:\n"
+		"./CamCtrl <image_name>\n"
+		"\Move the rectangular observing area around the object you want to select as the template\n" <<
+		"\nHot keys: \n"
+		"\tW - Move up\n"
+		"\tS - Move down\n"
+		"\tD - Move right\n"
+		"\tA - Move left\n"
+		"\n"
+		"\tU - Zoom out\n"
+		"\tI - Zoom in\n"
+		"\n"<< endl;
+}
+
+enum CamCtrlFlags
 {
 	MOVERIGHT = 0,
 	MOVELEFT = 1,
@@ -26,6 +48,12 @@ enum WindowMoveFlags
 	ZOOMOUT = 5			//缩小
 };
 
+enum CamState
+{
+	EXIT = 0,
+	SAVEIMAGE = 1
+};
+
 class CamCtrl
 {
 public:
@@ -33,13 +61,14 @@ public:
 	void showImage() const;
 	void reset();
 	void moveWin(int flags);
+	int ctrlCamera();
+	Mat WinImage;				//窗口所含图片
+
 
 private:
 	Mat SrcImg;					//用于仿真的全景图像
 	const string *WinName;		//用于显示的窗口名称
-	Mat WinImage;				//窗口所含图片
-	bool isInitialized;
-
+	bool isInitialized;			//是否初始化的标识（一般处于非初始化状态）
 	Rect ObserveWin;			//用于观测的窗口
 	Point WinCenter;			//观测中心
 	float WinWidth = 1000;		//观测窗口的宽
@@ -60,7 +89,6 @@ void CamCtrl::refreshWin()
 
 void CamCtrl::reset()
 {
-
 	isInitialized = false;
 	WinWidth = WinWidthMax;		//观测窗口的宽
 	WinHeight = WinHeightMax;		//观测窗口的高
@@ -102,12 +130,6 @@ void CamCtrl::showImage() const
 			Point(center.x - Roi.cols / 2, center.y), BLUE, 1);
 		line(Roi, Point(center.x, center.y + Roi.rows / 2),
 			Point(center.x, center.y - Roi.rows / 2), BLUE, 1);
-
-		//circle(Roi, WinCenter, 5, RED, -1);
-		//line(Roi, Point(WinCenter.x + WinWidth / 2, WinCenter.y), 
-		//	Point(WinCenter.x - WinWidth / 2, WinCenter.y), BLUE, 1);
-		//line(Roi, Point(WinCenter.x, WinCenter.y + WinHeight / 2),
-		//	Point(WinCenter.x, WinCenter.y - WinHeight / 2), BLUE, 1);
 		imshow(*WinName, Roi);
 	}
 	else
@@ -115,15 +137,7 @@ void CamCtrl::showImage() const
 		cout << "Initialized" << endl;
 		return;
 	}
-	//rectangle(res, Point(ObserveWin.x, ObserveWin.y), Point(ObserveWin.x + WinWidth + 1, ObserveWin.y + WinHeight + 1), RED, 1);
-	//Mat Roi = res(ObserveWin);
-	//Mat Roicopy = Roi.clone();
-	//res(ObserveWin).convertTo(Roi, Roi.type(), 1, 0);
-	//pyrUp(Roi, Roicopy, Size(WinWidthMax*2, WinHeightMax*2));
-	/*resize(Roi, Roicopy, Size(WinWidthMax, WinHeightMax));*/
-	//imshow(*WinName, Roi);
-	//imshow(*WinName, res);
-	
+
 }
 
 void CamCtrl::moveWin(int flags)
@@ -172,4 +186,47 @@ void CamCtrl::moveWin(int flags)
 		break;
 	}
 	refreshWin();
+}
+
+int CamCtrl::ctrlCamera()
+{
+	for (;;)
+	{
+		int c = waitKey(0);
+		int flags = 100;
+		switch ((char)c)
+		{
+		case 'd':
+			cout << "Move Right ..." << endl;
+			flags = MOVERIGHT;
+			break;
+		case 'a':
+			cout << "Move Left ..." << endl;
+			flags = MOVELEFT;
+			break;
+		case 'w':
+			cout << "Move Up ..." << endl;
+			flags = MOVEUP;
+			break;
+		case 's':
+			cout << "Move Down ..." << endl;
+			flags = MOVEDOWN;
+			break;
+		case 'u':
+			cout << "Zoom in ..." << endl;
+			flags = ZOOMIN;
+			break;
+		case 'i':
+			cout << "Zoom out ..." << endl;
+			flags = ZOOMOUT;
+			break;
+		case 'j':
+			return SAVEIMAGE;
+		default:
+			cout << "Wrong button ..." << endl;
+			break;
+		}
+		moveWin(flags);
+		showImage();
+	}
 }
