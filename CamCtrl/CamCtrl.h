@@ -3,9 +3,13 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
+#include "math.h"
+
 using namespace std;
 using namespace cv;
 
+
+const float PI = 3.141592654;
 const Scalar RED = Scalar(0, 0, 255);
 const Scalar PINK = Scalar(230, 130, 255);
 const Scalar BLUE = Scalar(255, 0, 0);
@@ -35,6 +39,9 @@ static void help()
 		"\n"
 		"\tU - Zoom out\n"
 		"\tI - Zoom in\n"
+		"\n"
+		"\tJ - Save image\n"
+		"\tEsc - Exit"
 		"\n"<< endl;
 }
 
@@ -44,15 +51,15 @@ enum CamCtrlFlags
 	MOVELEFT = 1,
 	MOVEDOWN = 2,
 	MOVEUP = 3,
-	ZOOMIN = 4,			//放大
-	ZOOMOUT = 5			//缩小
+	ZOOMIN = 4,						//放大视野
+	ZOOMOUT = 5,					//缩小视野
+	ROTATECLOCKWISE = 6,			//顺时针旋转
+	ROTATEANTICLOCKWISE = 7,		//逆时针旋转
+	EXIT = 8,
+	SAVEIMAGE = 9
 };
 
-enum CamState
-{
-	EXIT = 0,
-	SAVEIMAGE = 1
-};
+
 
 class CamCtrl
 {
@@ -69,10 +76,12 @@ private:
 	Mat SrcImg;					//用于仿真的全景图像
 	const string *WinName;		//用于显示的窗口名称
 	bool isInitialized;			//是否初始化的标识（一般处于非初始化状态）
+
 	Rect ObserveWin;			//用于观测的窗口
 	Point WinCenter;			//观测中心
 	float WinWidth = 1000;		//观测窗口的宽
 	float WinHeight = 1000;		//观测窗口的高
+	float FetchAngle = 0;		//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
 	Point TopLeft, TopRight, BottomLeft, BottomRight;		//可观测区的四个角点
 	
 	void refreshWin();			//根据WinCenter更新ObserveWin
@@ -90,9 +99,10 @@ void CamCtrl::refreshWin()
 void CamCtrl::reset()
 {
 	isInitialized = false;
-	WinWidth = WinWidthMax;		//观测窗口的宽
+	WinWidth = WinWidthMax;			//观测窗口的宽
 	WinHeight = WinHeightMax;		//观测窗口的高
 	WinCenter = TopLeft;
+	FetchAngle = 0;
 	refreshWin();
 }
 
@@ -126,10 +136,10 @@ void CamCtrl::showImage() const
 		resize(Roi, Roi, Size(WinWidthMax, WinHeightMax));
 		Point center = Point(Roi.cols / 2, Roi.rows / 2);
 		circle(Roi, center, 5, RED, -1);
-		line(Roi, Point(center.x + Roi.cols / 2, center.y),
-			Point(center.x - Roi.cols / 2, center.y), BLUE, 1);
-		line(Roi, Point(center.x, center.y + Roi.rows / 2),
-			Point(center.x, center.y - Roi.rows / 2), BLUE, 1);
+		line(Roi, Point(center.x + Roi.cols / 2, center.y - Roi.cols /2 *tan(FetchAngle)),
+			Point(center.x - Roi.cols / 2, center.y + Roi.cols / 2 *tan(FetchAngle)), GREEN, 1);
+		line(Roi, Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
+			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 1);
 		imshow(*WinName, Roi);
 	}
 	else
@@ -173,7 +183,6 @@ void CamCtrl::moveWin(int flags)
 			WinHeight = WinHeightMax;
 		}
 		break;
-			
 	case ZOOMOUT:
 		WinWidth -= WinWidth*moveratio;
 		WinHeight -= WinHeight*moveratio;
@@ -182,6 +191,13 @@ void CamCtrl::moveWin(int flags)
 			WinWidth = (WinWidthMax <= WinHeightMax) ? WinWidthMin : WinWidthMax / WinHeightMax;
 			WinHeight = (WinHeightMax >= WinWidthMax) ? WinHeightMin : WinHeightMax / WinWidthMax;
 		}
+		break;
+	case ROTATECLOCKWISE:
+		FetchAngle -= PI / 180;
+		break;
+	case ROTATEANTICLOCKWISE:
+		FetchAngle += PI / 180;
+		break;
 	default:
 		break;
 	}
@@ -212,16 +228,26 @@ int CamCtrl::ctrlCamera()
 			cout << "Move Down ..." << endl;
 			flags = MOVEDOWN;
 			break;
-		case 'u':
+		case 'i':
 			cout << "Zoom in ..." << endl;
 			flags = ZOOMIN;
 			break;
-		case 'i':
+		case 'u':
 			cout << "Zoom out ..." << endl;
 			flags = ZOOMOUT;
 			break;
+		case 'o':
+			cout << "Rotate anticlockwise" << endl;
+			flags = ROTATEANTICLOCKWISE;
+			break;
+		case 'p':
+			cout << "Rotate clockwise" << endl;
+			flags = ROTATECLOCKWISE;
+			break;
 		case 'j':
 			return SAVEIMAGE;
+		case 27:
+			return EXIT;
 		default:
 			cout << "Wrong button ..." << endl;
 			break;

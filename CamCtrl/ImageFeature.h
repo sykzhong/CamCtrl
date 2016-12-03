@@ -1,9 +1,8 @@
 #pragma once
-#pragma once
 #include "CamCtrl.h"
 #include "vector"
 #include "algorithm"
-#define PI 3.141592654;
+
 
 //该类用于存储相应轮廓的点序列、面积、中心等
 const int msfsp = 20;		//作为meanshift filter的像素位置差值
@@ -37,7 +36,7 @@ private:
 
 bool compareArea(vector<Point> _first, vector<Point> _second)
 {
-	int area1, area2;
+	float area1, area2;
 	area1 = contourArea(_first, false);
 	area2 = contourArea(_second, false);
 	if (area1 > area2)
