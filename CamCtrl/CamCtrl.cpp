@@ -44,6 +44,17 @@ int main(int argc, char** argv)
 		Template.initialize(camctrl);
 		string TwinName = "template";
 		Template.showImage(TwinName);
+
+		ImageFeature Target;
+		TwinName = "target";
+		string temp;
+		for (int i = 0; i < 11; i++)
+		{
+			camctrl.moveWin(camctrl.WinCenter + i*Point(0, 330));
+			Target.initialize(camctrl, Template);
+			temp = TwinName + (char)('1' + i);
+			Target.showImage(temp);
+		}
 		waitKey(0);
 	}
 }

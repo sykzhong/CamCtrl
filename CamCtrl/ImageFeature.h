@@ -7,13 +7,23 @@
 //该类用于存储相应轮廓的点序列、面积、中心等
 const int msfsp = 20;		//作为meanshift filter的像素位置差值
 const int msfsr = 10;		//作为Meanshift filter的像素大小差值
-const int th = 70;			//作为阈值提取的边界（考虑使用函数进行确定）
+const float thratio = 1;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
 
 enum ImageState
 {
 	TEMPLATE = 0,
 	TARGET = 1
 };
+
+bool compareArea(vector<Point> _first, vector<Point> _second)
+{
+	float area1, area2;
+	area1 = contourArea(_first, false);
+	area2 = contourArea(_second, false);
+	if (area1 > area2)
+		return true;
+	else return false;
+}
 
 class ImageFeature
 {
@@ -26,8 +36,8 @@ public:
 	void getFetchAngle();								//提取模板图像fetch相对椭圆坐标系的angle及绝对angle
 	void getFetchPoint(const ImageFeature& _template);		//根据模板图像提取目标图像fetchpoint
 	void getFetchAngle(const ImageFeature& _template);		//根据模板图像提取目标图像fetch相对椭圆坐标系的angle及绝对angle
-	void showImage(const string& _winName) const;
-	
+	void showImage(const string& _winName) const;			//显示并存储特征图像
+	void clear();
 
 
 private:
@@ -42,14 +52,16 @@ private:
 	
 };
 
-bool compareArea(vector<Point> _first, vector<Point> _second)
+void ImageFeature::clear()
 {
-	float area1, area2;
-	area1 = contourArea(_first, false);
-	area2 = contourArea(_second, false);
-	if (area1 > area2)
-		return true;
-	else return false;
+	SrcImage.release();
+	FetchPoint = Point(0, 0);
+	ComPoint = Point(0, 0);
+	FetchAngle = 0;
+	ComAngle = 0;
+	Contour.clear();
+	Box.size = Size(0, 0);
+	Box.center = Point(0, 0);
 }
 
 int ImageFeature::initialize(const CamCtrl& _template)			
@@ -71,6 +83,8 @@ void ImageFeature::getContour()
 	pyrMeanShiftFiltering(SrcImage, Dst, msfsp, msfsr);		//进行meanshift滤波
 
 	cvtColor(Dst, Dst_th, CV_BGR2GRAY);
+	float th;
+	th = thratio*mean(Dst_th).val[0];						//根据平均灰度值乘自定义比例，获得阈值提取分解点
 	threshold(Dst_th, Dst_th, th, 255, CV_THRESH_BINARY);
 
 	vector<vector<Point>> vecContour;
@@ -150,8 +164,18 @@ void ImageFeature::showImage(const string& _winName) const
 		vectemp.clear();
 		vectemp.push_back(Contour);
 		drawContours(res, vectemp, -1, RED);
-		namedWindow(_winName, WINDOW_NORMAL);
-		imshow(_winName, res);
+
+		
+		circle(res, FetchPoint, 5, RED, -1);
+		line(res, Point(FetchPoint.x + res.cols, FetchPoint.y - res.cols * tan(FetchAngle)),
+			Point(FetchPoint.x - res.cols, FetchPoint.y + res.cols * tan(FetchAngle)), GREEN, 1);
+		line(res, Point(FetchPoint.x + res.rows * tan(FetchAngle), FetchPoint.y + res.rows),
+			Point(FetchPoint.x - res.rows * tan(FetchAngle), FetchPoint.y - res.rows), BLUE, 1);
+
+		//namedWindow(_winName, WINDOW_NORMAL);
+		//imshow(_winName, res);
+		string jpgname = _winName + ".jpg";
+		imwrite(jpgname, res);
 	}
 	else
 	{
@@ -159,3 +183,4 @@ void ImageFeature::showImage(const string& _winName) const
 		return;
 	}
 }
+

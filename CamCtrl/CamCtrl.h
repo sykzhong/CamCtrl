@@ -68,6 +68,7 @@ public:
 	void showImage() const;
 	void reset();
 	void moveWin(int flags);
+	void moveWin(Point _pos);
 	int ctrlCamera();
 	Mat WinImage;				//窗口所含图片
 	float FetchAngle = 0;		//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
@@ -138,6 +139,7 @@ void CamCtrl::showImage() const
 		line(Roi, Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
 			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 1);
 		imshow(*WinName, Roi);
+		//cout << WinCenter << endl;
 	}
 	else
 	{
@@ -145,6 +147,12 @@ void CamCtrl::showImage() const
 		return;
 	}
 
+}
+
+void CamCtrl::moveWin(Point _pos)
+{
+	WinCenter = _pos;
+	refreshWin();
 }
 
 void CamCtrl::moveWin(int flags)
@@ -210,35 +218,27 @@ int CamCtrl::ctrlCamera()
 		switch ((char)c)
 		{
 		case 'd':
-			cout << "Move Right ..." << endl;
 			flags = MOVERIGHT;
 			break;
 		case 'a':
-			cout << "Move Left ..." << endl;
 			flags = MOVELEFT;
 			break;
 		case 'w':
-			cout << "Move Up ..." << endl;
 			flags = MOVEUP;
 			break;
 		case 's':
-			cout << "Move Down ..." << endl;
 			flags = MOVEDOWN;
 			break;
 		case 'i':
-			cout << "Zoom in ..." << endl;
 			flags = ZOOMIN;
 			break;
 		case 'u':
-			cout << "Zoom out ..." << endl;
 			flags = ZOOMOUT;
 			break;
 		case 'o':
-			cout << "Rotate anticlockwise" << endl;
 			flags = ROTATEANTICLOCKWISE;
 			break;
 		case 'p':
-			cout << "Rotate clockwise" << endl;
 			flags = ROTATECLOCKWISE;
 			break;
 		case 'j':

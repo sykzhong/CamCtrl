@@ -5,3 +5,7 @@ CamCtrl.VC.VC.opendb
 /ipch
 CamCtrl.VC.db
 CamCtrl.sln
+/CamCtrl/CamCtrl.vcxproj
+/CamCtrl/CamCtrl.vcxproj.user
+/CamCtrl/CamCtrl.vcxproj.filters
+*.jpg
