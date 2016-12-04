@@ -41,13 +41,11 @@ int main(int argc, char** argv)
 	if (camctrlflag == SAVEIMAGE)
 	{
 		ImageFeature Template;
-		Template.initialize(camctrl.WinImage);
+		Template.initialize(camctrl);
 		string TwinName = "template";
 		Template.showImage(TwinName);
 		waitKey(0);
 	}
-		
-		
 }
 
 

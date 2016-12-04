@@ -70,20 +70,17 @@ public:
 	void moveWin(int flags);
 	int ctrlCamera();
 	Mat WinImage;				//窗口所含图片
-
+	float FetchAngle = 0;		//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
+	Point WinCenter;			//观测中心
 
 private:
 	Mat SrcImg;					//用于仿真的全景图像
 	const string *WinName;		//用于显示的窗口名称
 	bool isInitialized;			//是否初始化的标识（一般处于非初始化状态）
-
 	Rect ObserveWin;			//用于观测的窗口
-	Point WinCenter;			//观测中心
 	float WinWidth = 1000;		//观测窗口的宽
 	float WinHeight = 1000;		//观测窗口的高
-	float FetchAngle = 0;		//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
 	Point TopLeft, TopRight, BottomLeft, BottomRight;		//可观测区的四个角点
-	
 	void refreshWin();			//根据WinCenter更新ObserveWin
 };
 

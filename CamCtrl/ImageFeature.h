@@ -19,19 +19,27 @@ class ImageFeature
 {
 public:
 	ImageFeature() {}
-	int initialize(const Mat& _image);
-	void getContour();
-	void getFetchPoint();				//提取模板图像fetchpoint
-	void getFetchPoint(ImageFeature& _feature);		//根据模板图像提取目标图像fetchpoint
+	int initialize(const CamCtrl& _template);			//对模板图像的特征初始化
+	int initialize(const CamCtrl& _target, const ImageFeature& _template);
+	void getContour();									//提取工件轮廓（阈值法）
+	void getFetchPoint();								//提取模板图像fetchpoint
+	void getFetchAngle();								//提取模板图像fetch相对椭圆坐标系的angle及绝对angle
+	void getFetchPoint(const ImageFeature& _template);		//根据模板图像提取目标图像fetchpoint
+	void getFetchAngle(const ImageFeature& _template);		//根据模板图像提取目标图像fetch相对椭圆坐标系的angle及绝对angle
 	void showImage(const string& _winName) const;
+	
+
 
 private:
-	bool isInitialized = false;
+	bool isInitialized = false;	
+	float FetchAngle;			//抓取用的机械臂相对绝对坐标系的角度
 	Mat SrcImage;				//加载进的原图像
-	Mat FeatureImage;
+	Point FetchPoint;			//抓取点
+	Point ComPoint;				//抓取点在绝对坐标系中相对椭圆中心的位置
+	float ComAngle;				//抓取用的机械臂相对椭圆坐标轴的角度
 	vector<Point> Contour;		//存储图像中工件的外形轮廓
 	RotatedRect Box;			//图像工件轮廓的最小包围椭圆的外切矩形
-	Point FetchPoint;			//抓取点
+	
 };
 
 bool compareArea(vector<Point> _first, vector<Point> _second)
@@ -44,11 +52,13 @@ bool compareArea(vector<Point> _first, vector<Point> _second)
 	else return false;
 }
 
-int ImageFeature::initialize(const Mat& _image)			//对此函数进行重载，已完成不同情况下对fetchpoint的重载
+int ImageFeature::initialize(const CamCtrl& _template)			
 {
-	SrcImage = _image.clone();
+	SrcImage = _template.WinImage.clone();
+	FetchAngle = _template.FetchAngle;
 	getContour();
 	getFetchPoint();
+	getFetchAngle();
 	isInitialized = true;
 	return 1;
 }
@@ -79,11 +89,54 @@ void ImageFeature::getFetchPoint()
 		return;
 	FetchPoint.x = SrcImage.cols / 2;
 	FetchPoint.y = SrcImage.rows / 2;
+	ComPoint.x = FetchPoint.x - Box.center.x;
+	ComPoint.y = FetchPoint.x - Box.center.y;
 }
 
-void ImageFeature::getFetchPoint(ImageFeature& feature)
+void ImageFeature::getFetchAngle()
 {
+	if (!SrcImage.data)
+		return;
+	ComAngle = FetchAngle - Box.angle/180*PI;
+}
 
+int ImageFeature::initialize(const CamCtrl& _target, const ImageFeature& _template)
+{
+	SrcImage = _target.WinImage.clone();
+	FetchAngle = _target.FetchAngle;
+	getContour();
+	getFetchPoint(_template);
+	getFetchAngle(_template);
+	isInitialized = true;
+	return 1;
+}
+
+void ImageFeature::getFetchPoint(const ImageFeature& _template)
+{
+	//由2到1的变换矩阵：
+	//12R = [cos(theta) -sin(theta)]
+	//	  [sin(theta) cos(theta)]
+	//由1到2的变换矩阵是上述矩阵的逆
+	Point templatepos_t, targetpos_t;							//分别表示template与target相对于Box.center在椭圆坐标系中的位置
+	float templateAngle = _template.Box.angle / PI * 180;		//椭圆坐标系相对绝对坐标转动的角度
+	templatepos_t.x = cos(templateAngle)*_template.ComPoint.x + sin(templateAngle)*_template.ComPoint.y;
+	templatepos_t.y = -sin(templateAngle)*_template.ComPoint.x + cos(templateAngle)*_template.ComPoint.y;
+	float rate_x, rate_y;										//模板、目标轮廓的缩放比例, dst/src
+	rate_x = this->Box.size.width / _template.Box.size.width;
+	rate_y = this->Box.size.height / _template.Box.size.height;
+	targetpos_t.x = templatepos_t.x*rate_x;						//对目标轮廓在椭圆坐标系中相对尺寸膨胀率
+	targetpos_t.y = templatepos_t.y*rate_y;
+	float targetAngle = this->Box.angle / PI * 180;
+	this->ComPoint.x = cos(targetAngle)*targetpos_t.x - sin(targetAngle)*targetpos_t.y;
+	this->ComPoint.y = sin(targetAngle)*targetpos_t.x + cos(targetAngle)*targetpos_t.y;
+	this->FetchPoint.x = this->ComPoint.x + this->Box.center.x;
+	this->FetchPoint.y = this->ComPoint.y + this->Box.center.y;
+}
+
+void ImageFeature::getFetchAngle(const ImageFeature& _template)
+{
+	this->ComAngle = _template.ComAngle;
+	this->FetchAngle = this->ComAngle + this->Box.angle / 180 * PI;
 }
 
 void ImageFeature::showImage(const string& _winName) const
