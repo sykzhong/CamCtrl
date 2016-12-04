@@ -7,7 +7,7 @@
 //该类用于存储相应轮廓的点序列、面积、中心等
 const int msfsp = 20;		//作为meanshift filter的像素位置差值
 const int msfsr = 10;		//作为Meanshift filter的像素大小差值
-const float thratio = 1;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
+const float thratio = 0.9;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
 
 enum ImageState
 {

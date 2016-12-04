@@ -139,7 +139,7 @@ void CamCtrl::showImage() const
 		line(Roi, Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
 			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 1);
 		imshow(*WinName, Roi);
-		//cout << WinCenter << endl;
+		cout << WinCenter << endl;
 	}
 	else
 	{
