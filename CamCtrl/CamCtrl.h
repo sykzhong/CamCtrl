@@ -19,8 +19,8 @@ const Scalar BLACK = Scalar(0, 0, 0);
 
 const float moveratio = 0.01;
 
-const float WinWidthMax = 700;		//观测窗口的最大宽
-const float WinHeightMax = 700;		//观测窗口的最大高，这里直接确定了窗口的长宽比
+const float WinWidthMax = 1000;		//观测窗口的最大宽
+const float WinHeightMax = 1000;		//观测窗口的最大高，这里直接确定了窗口的长宽比
 const float WinWidthMin = 100;
 const float WinHeightMin = WinWidthMin*WinHeightMax / WinWidthMax;
 
@@ -179,7 +179,7 @@ void CamCtrl::moveWin(int flags)
 		if (WinCenter.y <= TopLeft.y)
 			WinCenter.y = TopLeft.y;
 		break;
-	case ZOOMIN:			//关于放大缩小的条件约束还需后续加进来，或者在roi的显示中下功夫
+	case ZOOMIN:			
 		WinWidth += WinWidth*moveratio;
 		WinHeight += WinHeight*moveratio;
 		if (WinWidth >= WinWidthMax || WinHeight >= WinHeightMax)

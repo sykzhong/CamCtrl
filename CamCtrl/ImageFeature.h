@@ -31,7 +31,7 @@ public:
 	ImageFeature() {}
 	int initialize(const CamCtrl& _template);			//对模板图像的特征初始化
 	int initialize(const CamCtrl& _target, const ImageFeature& _template);
-	void getContour();									//提取工件轮廓（阈值法）
+	int getContour();									//提取工件轮廓（阈值法）
 	void getFetchPoint();								//提取模板图像fetchpoint
 	void getFetchAngle();								//提取模板图像fetch相对椭圆坐标系的angle及绝对angle
 	void getFetchPoint(const ImageFeature& _template);		//根据模板图像提取目标图像fetchpoint
@@ -68,16 +68,20 @@ int ImageFeature::initialize(const CamCtrl& _template)
 {
 	SrcImage = _template.WinImage.clone();
 	FetchAngle = _template.FetchAngle;
-	getContour();
-	getFetchPoint();
-	getFetchAngle();
-	isInitialized = true;
-	return 1;
+	if (getContour() == 0)
+		return 0;		//初始化失败
+	else
+	{
+		getFetchPoint();
+		getFetchAngle();
+		isInitialized = true;
+		return 1;
+	}
 }
-void ImageFeature::getContour()
+int ImageFeature::getContour()
 {
 	if (!SrcImage.data)
-		return;
+		return 0;
 	Mat Dst;
 	Mat Dst_th;		//用于存储单通道图像
 	pyrMeanShiftFiltering(SrcImage, Dst, msfsp, msfsr);		//进行meanshift滤波
@@ -91,10 +95,15 @@ void ImageFeature::getContour()
 	vector<Vec4i> Hierachy;
 	findContours(Dst_th, vecContour, Hierachy,
 		CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-
+	if (vecContour.size() <= 0)
+	{
+		cout << "failed to search the workpiece" << endl;
+		return 0;
+	}
 	sort(vecContour.begin(), vecContour.end(), compareArea);
 	Contour = *(vecContour.begin() + 1);		//选择其中面积第二大的轮廓作为工件轮廓
 	Box = fitEllipse(Contour);
+	return 1;
 }
 
 void ImageFeature::getFetchPoint()
@@ -119,10 +128,17 @@ int ImageFeature::initialize(const CamCtrl& _target, const ImageFeature& _templa
 	SrcImage = _target.WinImage.clone();
 	FetchAngle = _target.FetchAngle;
 	getContour();
-	getFetchPoint(_template);
-	getFetchAngle(_template);
-	isInitialized = true;
-	return 1;
+	if (contourArea(Contour, false) < 0.7*contourArea(_template.Contour, false)
+		|| contourArea(Contour, false) >1.3*contourArea(_template.Contour, false))		//利用面积大小对轮廓是否为工件轮廓进行判断
+		return 0;
+	else
+	{
+		getFetchPoint(_template);
+		getFetchAngle(_template);
+		isInitialized = true;
+		return 1;
+	}
+	
 }
 
 void ImageFeature::getFetchPoint(const ImageFeature& _template)

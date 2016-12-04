@@ -50,10 +50,16 @@ int main(int argc, char** argv)
 		string temp;
 		for (int i = 0; i < 11; i++)
 		{
-			camctrl.moveWin(camctrl.WinCenter + i*Point(0, 330));
-			Target.initialize(camctrl, Template);
-			temp = TwinName + (char)('1' + i);
-			Target.showImage(temp);
+			Target.clear();
+			camctrl.moveWin(camctrl.WinCenter + Point(0, 330));		//坑爹的，+号会直接影响左操作数
+			if (Target.initialize(camctrl, Template) == 0)
+				continue;
+			else
+			{
+				temp = TwinName + (char)('1' + i);
+				Target.showImage(temp);
+			}
+			
 		}
 		waitKey(0);
 	}
