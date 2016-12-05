@@ -5,7 +5,7 @@
 #include "CamCtrl.h"
 #include "ImageFeature.h"
 
-const Point origin = Point(758, 727);
+const Point origin = Point(682, 651);
 int main(int argc, char** argv)
 {
 	CamCtrl camctrl;
@@ -49,9 +49,9 @@ int main(int argc, char** argv)
 		ImageFeature Target;
 		TwinName = "target";
 		string temp;
-		for (int i = 0; i < 10; i++)		//行
+		for (int i = 0; i < 12; i++)		//行
 		{
-			for (int j = 0; j < 8; j++)		//列
+			for (int j = 0; j < 9; j++)		//列
 			{
 				camctrl.moveWin(origin + i*Point(0, 330) + j*Point(330, 0));
 				Target.clear();
@@ -59,7 +59,10 @@ int main(int argc, char** argv)
 					continue;
 				else
 				{
-					temp = TwinName + (char)('1' + i) + (char)('1'+j);
+					if (i < 10)
+						temp = TwinName + (char)('1' + i) + (char)('1' + j);
+					else
+						temp = TwinName + (char)('A' + i - 10) + (char)('1'+j);
 					Target.showImage(temp);
 				}
 			}

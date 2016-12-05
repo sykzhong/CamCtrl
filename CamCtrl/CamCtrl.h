@@ -19,8 +19,8 @@ const Scalar BLACK = Scalar(0, 0, 0);
 
 const float moveratio = 0.01;
 
-const float WinWidthMax = 1000;		//观测窗口的最大宽
-const float WinHeightMax = 1000;		//观测窗口的最大高，这里直接确定了窗口的长宽比
+const float WinWidthMax = 850;		//观测窗口的最大宽
+const float WinHeightMax = 850;		//观测窗口的最大高，这里直接确定了窗口的长宽比
 const float WinWidthMin = 100;
 const float WinHeightMin = WinWidthMin*WinHeightMax / WinWidthMax;
 
@@ -29,7 +29,7 @@ static void help()
 	cout << "\nThis program aims to control the move of the camera, \n"
 		"and then transform the target image to other program.\n"
 		"Call:\n"
-		"./CamCtrl <image_name>\n"
+		"vibration isolated table photo\n"
 		"\Move the rectangular observing area around the object you want to select as the template\n" <<
 		"\nHot keys: \n"
 		"\tW - Move up\n"
@@ -40,6 +40,8 @@ static void help()
 		"\tU - Zoom out\n"
 		"\tI - Zoom in\n"
 		"\n"
+		"\tO - Rotate clockwise\n"
+		"\tP - Rotate anticlockwise\n"
 		"\tJ - Save image\n"
 		"\tEsc - Exit"
 		"\n"<< endl;
@@ -79,8 +81,8 @@ private:
 	const string *WinName;		//用于显示的窗口名称
 	bool isInitialized;			//是否初始化的标识（一般处于非初始化状态）
 	Rect ObserveWin;			//用于观测的窗口
-	float WinWidth = 1000;		//观测窗口的宽
-	float WinHeight = 1000;		//观测窗口的高
+	float WinWidth = WinWidthMax;		//观测窗口的宽
+	float WinHeight = WinHeightMax;		//观测窗口的高
 	Point TopLeft, TopRight, BottomLeft, BottomRight;		//可观测区的四个角点
 	void refreshWin();			//根据WinCenter更新ObserveWin
 };
@@ -133,11 +135,12 @@ void CamCtrl::showImage() const
 				
 		resize(Roi, Roi, Size(WinWidthMax, WinHeightMax));
 		Point center = Point(Roi.cols / 2, Roi.rows / 2);
-		circle(Roi, center, 5, RED, -1);
+		
 		line(Roi, Point(center.x + Roi.cols / 2, center.y - Roi.cols /2 *tan(FetchAngle)),
-			Point(center.x - Roi.cols / 2, center.y + Roi.cols / 2 *tan(FetchAngle)), GREEN, 1);
+			Point(center.x - Roi.cols / 2, center.y + Roi.cols / 2 *tan(FetchAngle)), GREEN, 2);
 		line(Roi, Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
-			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 1);
+			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 2);
+		circle(Roi, center, 5, RED, -1);
 		imshow(*WinName, Roi);
 		cout << WinCenter << endl;
 	}

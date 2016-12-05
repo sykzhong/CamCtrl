@@ -7,7 +7,7 @@
 //该类用于存储相应轮廓的点序列、面积、中心等
 const int msfsp = 20;		//作为meanshift filter的像素位置差值
 const int msfsr = 10;		//作为Meanshift filter的像素大小差值
-const float thratio = 0.9;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
+const float thratio = 1;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
 
 enum ImageState
 {
@@ -129,8 +129,9 @@ int ImageFeature::initialize(const CamCtrl& _target, const ImageFeature& _templa
 	FetchAngle = _target.FetchAngle;
 	getContour();
 	if (contourArea(Contour, false) < 0.7*contourArea(_template.Contour, false)
-		|| contourArea(Contour, false) >1.3*contourArea(_template.Contour, false))		//利用面积大小对轮廓是否为工件轮廓进行判断
+		|| contourArea(Contour, false) > 1.3*contourArea(_template.Contour, false))		//利用面积大小对轮廓是否为工件轮廓进行判断
 		return 0;
+		
 	else
 	{
 		getFetchPoint(_template);
