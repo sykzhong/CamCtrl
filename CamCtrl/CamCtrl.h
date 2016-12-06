@@ -19,8 +19,8 @@ const Scalar BLACK = Scalar(0, 0, 0);
 
 const float moveratio = 0.01;
 
-const float WinWidthMax = 1000;		//观测窗口的最大宽
-const float WinHeightMax = 1000;		//观测窗口的最大高，这里直接确定了窗口的长宽比
+const float WinWidthMax = 600;		//观测窗口的最大宽
+const float WinHeightMax = 600;		//观测窗口的最大高，这里直接确定了窗口的长宽比
 const float WinWidthMin = 100;
 const float WinHeightMin = WinWidthMin*WinHeightMax / WinWidthMax;
 
@@ -116,12 +116,13 @@ void CamCtrl::reset()
 void CamCtrl::setImageAndWinName(const Mat& _image, const string& _winName)
 {
 	CV_Assert(!_image.empty() || !_winName.empty());
-	int top, bottom, left, right;
-	top = (int)WinHeightMax / 2;
-	bottom = (int)WinHeightMax / 2;
-	left = (int)WinWidthMax / 2;
-	right = (int)WinWidthMax / 2;
 	SrcImg = _image.clone();
+	int top, bottom, left, right;
+	top = (int)SrcImg.cols;
+	bottom = (int)SrcImg.cols;
+	left = (int)SrcImg.rows;
+	right = (int)SrcImg.rows;
+	
 	copyMakeBorder(_image, SrcImg, top, bottom, left, right, BORDER_CONSTANT);
 
 	TopLeft = Point(left, top);
@@ -192,10 +193,10 @@ void CamCtrl::moveWin(int flags)
 	case ZOOM_IN:			
 		WinWidth += WinWidth*moveratio;
 		WinHeight += WinHeight*moveratio;
-		if (WinWidth >= 2*WinImage.cols || WinHeight >= 2 * WinImage.rows)
+		if (WinWidth >= 2* SrcImg.cols || WinHeight >= 2 * SrcImg.rows)
 		{
-			WinWidth = WinWidthMax;
-			WinHeight = WinHeightMax;
+			WinWidth = 2 * SrcImg.cols;
+			WinHeight = 2 * SrcImg.rows;
 		}
 		break;
 	case ZOOM_OUT:
