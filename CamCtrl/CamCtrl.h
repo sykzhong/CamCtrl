@@ -19,8 +19,8 @@ const Scalar BLACK = Scalar(0, 0, 0);
 
 const float moveratio = 0.01;
 
-const float WinWidthMax = 850;		//观测窗口的最大宽
-const float WinHeightMax = 850;		//观测窗口的最大高，这里直接确定了窗口的长宽比
+const float WinWidthMax = 1000;		//观测窗口的最大宽
+const float WinHeightMax = 1000;		//观测窗口的最大高，这里直接确定了窗口的长宽比
 const float WinWidthMin = 100;
 const float WinHeightMin = WinWidthMin*WinHeightMax / WinWidthMax;
 
@@ -68,18 +68,20 @@ enum CamCtrlFlags
 class CamCtrl
 {
 public:
+	Mat WinImage;						//窗口所含图片
+	float FetchAngle = 0;				//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
+	Point WinCenter;					//观测中心
+	float WinWidth = WinWidthMax;		//观测窗口的宽
+	float WinHeight = WinHeightMax;		//观测窗口的高
+
+
 	void setImageAndWinName(const Mat& _image, const string& _winName);
 	void showImage() const;								//显示图片
 	void reset();										//初始化设置	
 	void moveWin(int flags);							//利用键盘进行窗口移动
 	void moveWin(Point _pos);							//将窗口直接移动到相应位置
 	int ctrlCamera();									//循环检测键盘按键，将参数传递给moveWin(int flags)
-	Mat WinImage;										//窗口所含图片
-	float FetchAngle = 0;								//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
-	Point WinCenter;									//观测中心
-	float WinWidth = WinWidthMax;		//观测窗口的宽
-	float WinHeight = WinHeightMax;		//观测窗口的高
-	void refreshWin();			//根据WinCenter更新ObserveWin
+	void refreshWin();									//根据WinCenter更新ObserveWin
 
 
 private:
@@ -190,7 +192,7 @@ void CamCtrl::moveWin(int flags)
 	case ZOOM_IN:			
 		WinWidth += WinWidth*moveratio;
 		WinHeight += WinHeight*moveratio;
-		if (WinWidth >= WinWidthMax || WinHeight >= WinHeightMax)
+		if (WinWidth >= 2*WinImage.cols || WinHeight >= 2 * WinImage.rows)
 		{
 			WinWidth = WinWidthMax;
 			WinHeight = WinHeightMax;

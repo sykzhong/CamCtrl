@@ -10,10 +10,11 @@ const Point origin = Point(682, 651);
 void autoScanning(CamCtrl _template);		//对12*9的隔震台螺纹孔进行扫描，传入的系数是模板图像的CamCtrl类
 void manualScanning(CamCtrl _camctrl, const float _WinWidth, const float _WinHeight);		//进行人工遥控扫描，传入的系数是模板图像的CamCtrl类，并将被继续用于扫描其他工件
 
+
 int main(int argc, char** argv)
 {
 	
-	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\CamCtrl\\CamCtrl\\gzt01.jpg|}");
+	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\CamCtrl1.1\\CamCtrl\\lm02.jpg|}");
 	parser.about("Application name v1.1");
 	if (parser.has("help"))
 	{

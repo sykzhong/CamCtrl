@@ -7,7 +7,7 @@
 //该类用于存储相应轮廓的点序列、面积、中心等
 const int msfsp = 20;		//作为meanshift filter的像素位置差值
 const int msfsr = 10;		//作为Meanshift filter的像素大小差值
-const float thratio = 1;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
+const float thratio = 0.5;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
 
 enum ImageState
 {
@@ -28,7 +28,6 @@ bool compareArea(vector<Point> _first, vector<Point> _second)
 class ImageFeature
 {
 public:
-	ImageFeature() {}
 	int initialize(const CamCtrl& _template);			//对模板图像的特征初始化
 	int initialize(const CamCtrl& _target, const ImageFeature& _template);
 	int getContour();									//提取工件轮廓（阈值法）
@@ -41,9 +40,10 @@ public:
 
 
 private:
-	bool isInitialized = false;	
 	float FetchAngle;			//抓取用的机械臂相对绝对坐标系的角度
 	Mat SrcImage;				//加载进的原图像
+
+	bool isInitialized = false;	
 	Point FetchPoint;			//抓取点
 	Point ComPoint;				//抓取点在绝对坐标系中相对椭圆中心的位置
 	float ComAngle;				//抓取用的机械臂相对椭圆坐标轴的角度
