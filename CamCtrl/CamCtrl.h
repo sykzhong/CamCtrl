@@ -42,23 +42,25 @@ static void help()
 		"\n"
 		"\tO - Rotate clockwise\n"
 		"\tP - Rotate anticlockwise\n"
-		"\tJ - Save image\n"
+		"\tJ - Save template image\n"
+		"\tK - Save target image\n"
 		"\tEsc - Exit"
 		"\n"<< endl;
 }
 
 enum CamCtrlFlags
 {
-	MOVERIGHT = 0,
-	MOVELEFT = 1,
-	MOVEDOWN = 2,
-	MOVEUP = 3,
-	ZOOMIN = 4,						//放大视野
-	ZOOMOUT = 5,					//缩小视野
-	ROTATECLOCKWISE = 6,			//顺时针旋转
-	ROTATEANTICLOCKWISE = 7,		//逆时针旋转
+	MOVE_RIGHT = 0,
+	MOVE_LEFT = 1,
+	MOVE_DOWN = 2,
+	MOVE_UP = 3,
+	ZOOM_IN = 4,						//放大视野
+	ZOOM_OUT = 5,					//缩小视野
+	ROTATE_CLOCKWISE = 6,			//顺时针旋转
+	ROTATE_ANTICLOCKWISE = 7,		//逆时针旋转
 	EXIT = 8,
-	SAVEIMAGE = 9
+	SAVE_TEMPLATE_IMAGE = 9,
+	SAVE_TARGET_IMAGE = 10
 };
 
 
@@ -67,24 +69,27 @@ class CamCtrl
 {
 public:
 	void setImageAndWinName(const Mat& _image, const string& _winName);
-	void showImage() const;
-	void reset();
-	void moveWin(int flags);
-	void moveWin(Point _pos);
-	int ctrlCamera();
-	Mat WinImage;				//窗口所含图片
-	float FetchAngle = 0;		//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
-	Point WinCenter;			//观测中心
+	void showImage() const;								//显示图片
+	void reset();										//初始化设置	
+	void moveWin(int flags);							//利用键盘进行窗口移动
+	void moveWin(Point _pos);							//将窗口直接移动到相应位置
+	int ctrlCamera();									//循环检测键盘按键，将参数传递给moveWin(int flags)
+	Mat WinImage;										//窗口所含图片
+	float FetchAngle = 0;								//抓取角度，初始与x轴平行，弧度表示，取值范围在-pi/2~pi/2之间
+	Point WinCenter;									//观测中心
+	float WinWidth = WinWidthMax;		//观测窗口的宽
+	float WinHeight = WinHeightMax;		//观测窗口的高
+	void refreshWin();			//根据WinCenter更新ObserveWin
+
 
 private:
 	Mat SrcImg;					//用于仿真的全景图像
 	const string *WinName;		//用于显示的窗口名称
 	bool isInitialized;			//是否初始化的标识（一般处于非初始化状态）
 	Rect ObserveWin;			//用于观测的窗口
-	float WinWidth = WinWidthMax;		//观测窗口的宽
-	float WinHeight = WinHeightMax;		//观测窗口的高
+
 	Point TopLeft, TopRight, BottomLeft, BottomRight;		//可观测区的四个角点
-	void refreshWin();			//根据WinCenter更新ObserveWin
+	
 };
 
 void CamCtrl::refreshWin()
@@ -142,7 +147,7 @@ void CamCtrl::showImage() const
 			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 2);
 		circle(Roi, center, 5, RED, -1);
 		imshow(*WinName, Roi);
-		cout << WinCenter << endl;
+		//cout << WinCenter << endl;
 	}
 	else
 	{
@@ -162,27 +167,27 @@ void CamCtrl::moveWin(int flags)
 {
 	switch (flags)
 	{
-	case MOVERIGHT:
+	case MOVE_RIGHT:
 		WinCenter.x += WinWidth*moveratio;
 		if (WinCenter.x >= TopRight.x)
 			WinCenter.x = TopRight.x;
 		break;
-	case MOVELEFT:
+	case MOVE_LEFT:
 		WinCenter.x -= WinWidth*moveratio;
 		if (WinCenter.x <= TopLeft.x)
 			WinCenter.x = TopLeft.x;
 		break;
-	case MOVEDOWN:
+	case MOVE_DOWN:
 		WinCenter.y += WinHeight*moveratio;
 		if (WinCenter.y >= BottomLeft.y)
 			WinCenter.y = BottomLeft.y;
 		break;
-	case MOVEUP:
+	case MOVE_UP:
 		WinCenter.y -= WinHeight*moveratio;
 		if (WinCenter.y <= TopLeft.y)
 			WinCenter.y = TopLeft.y;
 		break;
-	case ZOOMIN:			
+	case ZOOM_IN:			
 		WinWidth += WinWidth*moveratio;
 		WinHeight += WinHeight*moveratio;
 		if (WinWidth >= WinWidthMax || WinHeight >= WinHeightMax)
@@ -191,7 +196,7 @@ void CamCtrl::moveWin(int flags)
 			WinHeight = WinHeightMax;
 		}
 		break;
-	case ZOOMOUT:
+	case ZOOM_OUT:
 		WinWidth -= WinWidth*moveratio;
 		WinHeight -= WinHeight*moveratio;
 		if (WinWidth <= WinWidthMin || WinHeight <= WinHeightMin)
@@ -200,10 +205,10 @@ void CamCtrl::moveWin(int flags)
 			WinHeight = (WinHeightMax >= WinWidthMax) ? WinHeightMin : WinHeightMax / WinWidthMax;
 		}
 		break;
-	case ROTATECLOCKWISE:
+	case ROTATE_CLOCKWISE:
 		FetchAngle -= PI / 180;
 		break;
-	case ROTATEANTICLOCKWISE:
+	case ROTATE_ANTICLOCKWISE:
 		FetchAngle += PI / 180;
 		break;
 	default:
@@ -221,31 +226,33 @@ int CamCtrl::ctrlCamera()
 		switch ((char)c)
 		{
 		case 'd':
-			flags = MOVERIGHT;
+			flags = MOVE_RIGHT;
 			break;
 		case 'a':
-			flags = MOVELEFT;
+			flags = MOVE_LEFT;
 			break;
 		case 'w':
-			flags = MOVEUP;
+			flags = MOVE_UP;
 			break;
 		case 's':
-			flags = MOVEDOWN;
+			flags = MOVE_DOWN;
 			break;
 		case 'i':
-			flags = ZOOMIN;
+			flags = ZOOM_IN;
 			break;
 		case 'u':
-			flags = ZOOMOUT;
+			flags = ZOOM_OUT;
 			break;
 		case 'o':
-			flags = ROTATEANTICLOCKWISE;
+			flags = ROTATE_ANTICLOCKWISE;
 			break;
 		case 'p':
-			flags = ROTATECLOCKWISE;
+			flags = ROTATE_CLOCKWISE;
 			break;
 		case 'j':
-			return SAVEIMAGE;
+			return SAVE_TEMPLATE_IMAGE;
+		case 'k':
+			return SAVE_TARGET_IMAGE;
 		case 27:
 			return EXIT;
 		default:
