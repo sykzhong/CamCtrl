@@ -39,6 +39,7 @@ public:
 	void clear();
 
 
+
 private:
 	float FetchAngle;			//抓取用的机械臂相对绝对坐标系的角度
 	Mat SrcImage;				//加载进的原图像

@@ -14,7 +14,7 @@ void manualScanning(CamCtrl _camctrl, const float _WinWidth, const float _WinHei
 int main(int argc, char** argv)
 {
 	
-	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\CamCtrl1.1\\CamCtrl\\lm02.jpg|}");
+	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\CamCtrl\\CamCtrl\\lm02.jpg|}");
 	parser.about("Application name v1.1");
 	if (parser.has("help"))
 	{
@@ -107,17 +107,13 @@ void manualScanning(CamCtrl _camctrl, const float _WinWidth, const float _WinHei
 			Target.clear();
 			_itoa(num, strnum, 10);				//进行文件名编辑
 			temp = TwinName + strnum;
-			if (Target.initialize(_camctrl, Template) == 0)
-				continue;
-			else
+			if (Target.initialize(_camctrl, Template) != 0)
 			{
-				_camctrl.WinWidth = tempWinWidth;
-				_camctrl.WinHeight = tempWinHeight;
 				Target.showImage(temp);
 				num++;
-				
 			}
-				
+			_camctrl.WinWidth = tempWinWidth;
+			_camctrl.WinHeight = tempWinHeight;
 		}
 	}
 
