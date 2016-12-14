@@ -9,6 +9,16 @@ const int msfsp = 20;		//作为meanshift filter的像素位置差值
 const int msfsr = 10;		//作为Meanshift filter的像素大小差值
 const float thratio = 0.5;	//图像平均阈值比例系数，thration*thmean作为阈值提取边界
 
+//背景HSV取值区间，这里背景设为绿色
+const int iLowH = 34;
+const int iHighH = 130;
+
+const int iLowS = 90;
+const int iHighS = 255;
+
+const int iLowV = 0;
+const int iHighV = 255;
+
 enum ImageState
 {
 	TEMPLATE = 0,
@@ -84,13 +94,21 @@ int ImageFeature::getContour()
 	if (!SrcImage.data)
 		return 0;
 	Mat Dst;
-	Mat Dst_th;		//用于存储单通道图像
+	Mat Dst_HSV, Dst_th;		//用于存储HSV图像，单通道图像
 	pyrMeanShiftFiltering(SrcImage, Dst, msfsp, msfsr);		//进行meanshift滤波
 
-	cvtColor(Dst, Dst_th, CV_BGR2GRAY);
-	float th;
-	th = thratio*mean(Dst_th).val[0];						//根据平均灰度值乘自定义比例，获得阈值提取分解点
-	threshold(Dst_th, Dst_th, th, 255, CV_THRESH_BINARY);
+	//cvtColor(Dst, Dst_th, CV_BGR2GRAY);
+	//float th;
+	//th = thratio*mean(Dst_th).val[0];						//根据平均灰度值乘自定义比例，获得阈值提取分解点
+	//threshold(Dst_th, Dst_th, th, 255, CV_THRESH_BINARY);
+	cvtColor(SrcImage, Dst_HSV, COLOR_BGR2HSV);				//将图像由RGB转为HSV图像，以进行颜色识别
+	//用于存储HSV图像各个通道的图像，用于进行直方图均衡化
+	vector<Mat> hsvSplit;		
+	split(Dst_HSV, hsvSplit);
+	equalizeHist(hsvSplit[2], hsvSplit[2]);
+	merge(hsvSplit, Dst_HSV);
+	//利用颜色梯度进行阈值提取，工件为黑，背景（被提取）为白
+	inRange(Dst_HSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), Dst_th);
 
 	vector<vector<Point>> vecContour;
 	vector<Vec4i> Hierachy;

@@ -14,7 +14,7 @@ void manualScanning(CamCtrl _camctrl, const float _WinWidth, const float _WinHei
 int main(int argc, char** argv)
 {
 	
-	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\CamCtrl\\CamCtrl\\lm02.jpg|}");
+	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\lm05.jpg|}");
 	parser.about("Application name v1.1");
 	if (parser.has("help"))
 	{
