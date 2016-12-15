@@ -1,120 +1,179 @@
-// CamCtrl.cpp : 定义控制台应用程序的入口点。
-//
-
 #include "stdafx.h"
 #include "CamCtrl.h"
-#include "ImageFeature.h"
+#include "ImageRecognition.h"
 
-const Point origin = Point(682, 651);
-
-void autoScanning(CamCtrl _template);		//对12*9的隔震台螺纹孔进行扫描，传入的系数是模板图像的CamCtrl类
-void manualScanning(CamCtrl _camctrl, const float _WinWidth, const float _WinHeight);		//进行人工遥控扫描，传入的系数是模板图像的CamCtrl类，并将被继续用于扫描其他工件
-
-
-int main(int argc, char** argv)
+void CamCtrl::refreshWin()
 {
-	
-	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\lm05.jpg|}");
-	parser.about("Application name v1.1");
-	if (parser.has("help"))
-	{
-		help();
-		return 0;
-	}
-	string filename = parser.get<string>("@input");
-	if (filename.empty())
-	{
-		cout << "\nEmpty filename" << endl;
-		return 1;
-	}
-	Mat image = imread(filename, 1);
-	if (image.empty())
-	{
-		cout << "Couldn't read image filename" << filename << endl;
-		return 1;
-	}
-	help();
-	CamCtrl camctrl;				//模板图像的CamCtrl类
-	const string winName = "image";
-	namedWindow(winName, WINDOW_AUTOSIZE);
-	camctrl.setImageAndWinName(image, winName);
-	camctrl.showImage();
-	//使用ctrlCamera函数获取模板图像
-	int camctrlflag;
-	camctrlflag = camctrl.ctrlCamera();
-	if (camctrlflag == SAVE_TEMPLATE_IMAGE)
-		autoScanning(camctrl);
-	if (camctrlflag == SAVE_TARGET_IMAGE)
-		manualScanning(camctrl, camctrl.WinWidth, camctrl.WinHeight);
+	ObserveWin.width = WinWidth;
+	ObserveWin.height = WinHeight;
+	ObserveWin.x = WinCenter.x - 0.5*WinWidth;
+	ObserveWin.y = WinCenter.y - 0.5*WinHeight;
+	WinImage = SrcImg(ObserveWin).clone();
 }
 
-void autoScanning(CamCtrl _template)
+void CamCtrl::reset()
 {
-	ImageFeature Template;
-	Template.initialize(_template);
-	string TwinName = "template";
-	Template.showImage(TwinName);
-
-	ImageFeature Target;
-	TwinName = "target";
-	string temp;
-	for (int i = 0; i < 12; i++)		//行
-	{
-		for (int j = 0; j < 9; j++)		//列
-		{
-			_template.moveWin(origin + i*Point(0, 330) + j*Point(330, 0));
-			Target.clear();
-			if (Target.initialize(_template, Template) == 0)
-				continue;
-			else
-			{
-				if (i < 10)
-					temp = TwinName + (char)('1' + i) + (char)('1' + j);
-				else
-					temp = TwinName + (char)('A' + i - 10) + (char)('1' + j);
-				Target.showImage(temp);
-			}
-		}
-	}
-	cout << "Auto scanning finished." << endl;
-	waitKey(0);
+	isInitialized = false;
+	WinWidth = WinWidthMax;			//观测窗口的宽
+	WinHeight = WinHeightMax;		//观测窗口的高
+	WinCenter = TopLeft;
+	FetchAngle = 0;
+	refreshWin();
 }
 
-void manualScanning(CamCtrl _camctrl, const float _WinWidth, const float _WinHeight)
+void CamCtrl::setImageAndWinName(const Mat& _image, const string& _winName)
 {
-	cout << "\tBegin the manual Scanning\n" << endl;
-	ImageFeature Template;
-	Template.initialize(_camctrl);
-	string TwinName = "template";
-	Template.showImage(TwinName);
+	CV_Assert(!_image.empty() || !_winName.empty());
+	SrcImg = _image.clone();
+	int top, bottom, left, right;
+	top = (int)SrcImg.cols;
+	bottom = (int)SrcImg.cols;
+	left = (int)SrcImg.rows;
+	right = (int)SrcImg.rows;
 
-	ImageFeature Target;
-	TwinName = "target";
-	int camctrlflag2 = SAVE_TEMPLATE_IMAGE;
-	int num = 0;			//匹配次数计数器
-	char strnum[25];
-	string temp;
-	while (camctrlflag2 != EXIT)
+	copyMakeBorder(_image, SrcImg, top, bottom, left, right, BORDER_CONSTANT);
+
+	TopLeft = Point(left, top);
+	TopRight = TopLeft + Point(_image.cols, 0);
+	BottomLeft = TopLeft + Point(0, _image.rows);
+	BottomRight = TopLeft + Point(_image.cols, _image.rows);
+	WinName = &_winName;
+	origin = TopLeft;
+	reset();
+}
+
+void CamCtrl::showImage() const
+{
+	CV_Assert(!SrcImg.empty() || !WinName->empty());
+	Mat res;
+	if (!isInitialized)
 	{
-		camctrlflag2 = _camctrl.ctrlCamera();
-		if (camctrlflag2 == SAVE_TEMPLATE_IMAGE)
-		{
-			float tempWinWidth = _camctrl.WinWidth;
-			float tempWinHeight = _camctrl.WinHeight;
-			_camctrl.WinWidth = _WinWidth;		//将camctrl的观测框大小进行调整，以匹配
-			_camctrl.WinHeight = _WinHeight;
-			_camctrl.refreshWin();				//将camctrl.winimage进行更新
-			Target.clear();
-			_itoa(num, strnum, 10);				//进行文件名编辑
-			temp = TwinName + strnum;
-			if (Target.initialize(_camctrl, Template) != 0)
-			{
-				Target.showImage(temp);
-				num++;
-			}
-			_camctrl.WinWidth = tempWinWidth;
-			_camctrl.WinHeight = tempWinHeight;
-		}
+		Mat Roi = WinImage.clone();
+
+		resize(Roi, Roi, Size(WinWidthMax, WinHeightMax));
+		Point center = Point(Roi.cols / 2, Roi.rows / 2);
+
+		line(Roi, Point(center.x + Roi.cols / 2, center.y - Roi.cols / 2 * tan(FetchAngle)),
+			Point(center.x - Roi.cols / 2, center.y + Roi.cols / 2 * tan(FetchAngle)), GREEN, 2);
+		line(Roi, Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
+			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 2);
+		circle(Roi, center, 5, RED, -1);
+		imshow(*WinName, Roi);
+		//cout << WinCenter << endl;
+	}
+	else
+	{
+		cout << "Initialized" << endl;
+		return;
 	}
 
+}
+
+void CamCtrl::moveWin(Point _pos)
+{
+	WinCenter = _pos;
+	refreshWin();
+}
+
+void CamCtrl::moveWin(int flags)
+{
+	switch (flags)
+	{
+	case MOVE_RIGHT:
+		WinCenter.x += WinWidth*moveratio;
+		if (WinCenter.x >= TopRight.x)
+			WinCenter.x = TopRight.x;
+		break;
+	case MOVE_LEFT:
+		WinCenter.x -= WinWidth*moveratio;
+		if (WinCenter.x <= TopLeft.x)
+			WinCenter.x = TopLeft.x;
+		break;
+	case MOVE_DOWN:
+		WinCenter.y += WinHeight*moveratio;
+		if (WinCenter.y >= BottomLeft.y)
+			WinCenter.y = BottomLeft.y;
+		break;
+	case MOVE_UP:
+		WinCenter.y -= WinHeight*moveratio;
+		if (WinCenter.y <= TopLeft.y)
+			WinCenter.y = TopLeft.y;
+		break;
+	case ZOOM_IN:
+		WinWidth += WinWidth*moveratio;
+		WinHeight += WinHeight*moveratio;
+		if (WinWidth >= 2 * SrcImg.cols || WinHeight >= 2 * SrcImg.rows)
+		{
+			WinWidth = 2 * SrcImg.cols;
+			WinHeight = 2 * SrcImg.rows;
+		}
+		break;
+	case ZOOM_OUT:
+		WinWidth -= WinWidth*moveratio;
+		WinHeight -= WinHeight*moveratio;
+		if (WinWidth <= WinWidthMin || WinHeight <= WinHeightMin)
+		{
+			WinWidth = (WinWidthMax <= WinHeightMax) ? WinWidthMin : WinWidthMax / WinHeightMax;
+			WinHeight = (WinHeightMax >= WinWidthMax) ? WinHeightMin : WinHeightMax / WinWidthMax;
+		}
+		break;
+	case ROTATE_CLOCKWISE:
+		FetchAngle -= PI / 180;
+		break;
+	case ROTATE_ANTICLOCKWISE:
+		FetchAngle += PI / 180;
+		break;
+	default:
+		break;
+	}
+	refreshWin();
+}
+
+int CamCtrl::ctrlCamera()
+{
+	for (;;)
+	{
+		int c = waitKey(0);
+		int flags = 100;
+		switch ((char)c)
+		{
+		case 'd':
+			flags = MOVE_RIGHT;
+			break;
+		case 'a':
+			flags = MOVE_LEFT;
+			break;
+		case 'w':
+			flags = MOVE_UP;
+			break;
+		case 's':
+			flags = MOVE_DOWN;
+			break;
+		case 'i':
+			flags = ZOOM_IN;
+			break;
+		case 'u':
+			flags = ZOOM_OUT;
+			break;
+		case 'o':
+			flags = ROTATE_ANTICLOCKWISE;
+			break;
+		case 'p':
+			flags = ROTATE_CLOCKWISE;
+			break;
+		case 'j':
+			return SAVE_AUTO_MODE;
+		case 'k':
+			return SAVE_MANUAL_MODE;
+		case 'l':
+			return SAVE_AUTO2_MODE;
+		case 27:
+			return EXIT;
+		default:
+			cout << "Wrong button ..." << endl;
+			break;
+		}
+		moveWin(flags);
+		showImage();
+	}
 }
