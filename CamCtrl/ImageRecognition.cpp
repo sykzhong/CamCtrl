@@ -3,6 +3,8 @@
 #include "ImageFeature.h"
 #include "CamCtrl.h"
 
+
+
 int ImageRecognition::getContour(vector<vector<Point>> &_vecContour, const Mat &_image)
 {
 	if (!_image.data)
@@ -33,7 +35,7 @@ int ImageRecognition::getContour(vector<vector<Point>> &_vecContour, const Mat &
 	return 1;
 }
 
-int ImageRecognition::getScanPoint(const Mat& _image, ImageFeature &_template, vector<Point> _pointpos)
+int ImageRecognition::getScanPoint(const Mat& _image, ImageFeature &_template, vector<Point> &_pointpos)
 {
 	vector<vector<Point>> vecContour;
 	getContour(vecContour, _image);
@@ -46,7 +48,7 @@ int ImageRecognition::getScanPoint(const Mat& _image, ImageFeature &_template, v
 		{
 			RotatedRect tempBox;
 			tempBox = fitEllipse(*iter);
-			_pointpos.push_back(origin + (Point)tempBox.center);
+			_pointpos.push_back(CamCtrl::origin + (Point)tempBox.center);
 		}
 	}
 	return 1;

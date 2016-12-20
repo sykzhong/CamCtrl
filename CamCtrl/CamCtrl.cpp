@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CamCtrl.h"
 #include "ImageRecognition.h"
+Point CamCtrl::origin = Point(0, 0);
 
 void CamCtrl::refreshWin()
 {

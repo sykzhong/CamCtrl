@@ -3,14 +3,15 @@
 #include "ImageFeature.h"
 #include "ImageRecognition.h"
 
-void autoScanning(CamCtrl _template);														//对12*9的隔震台螺纹孔进行扫描，传入的系数是模板图像的CamCtrl类
-void manualScanning(CamCtrl _camctrl, const double _WinWidth, const double _WinHeight);		//进行人工遥控扫描，传入的系数是模板图像的CamCtrl类，并将被继续用于扫描其他工件
-void autoSacnning2(CamCtrl _camctrl, Mat &_image);		//进行乱序扫描，传入的系数是模板图像的CamCtrl类，并将被继续用于扫描其他工件
+void autoScanning(CamCtrl &_template);														//对12*9的隔震台螺纹孔进行扫描，传入的系数是模板图像的CamCtrl类
+void manualScanning(CamCtrl &_camctrl, const double _WinWidth, const double _WinHeight);	//进行人工遥控扫描，传入的系数是模板图像的CamCtrl类，并将被继续用于扫描其他工件
+void autoSacnning2(CamCtrl &_camctrl, Mat &_image);											//进行乱序扫描，传入的系数是模板图像的CamCtrl类，并将被继续用于扫描其他工件
 
 int main(int argc, char** argv)
 {
 
-	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\lm05.jpg|}");
+	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\lm09.jpg|}");
+	//CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\gzt07.jpg|}");
 	parser.about("Application name v1.1");
 	if (parser.has("help"))
 	{
@@ -54,7 +55,7 @@ int main(int argc, char** argv)
 	}
 }
 
-void autoScanning(CamCtrl _template)
+void autoScanning(CamCtrl &_template)
 {
 	ImageFeature Template;
 	Template.initFeature(_template);
@@ -68,7 +69,7 @@ void autoScanning(CamCtrl _template)
 	{
 		for (int j = 0; j < 9; j++)		//列
 		{
-			_template.moveWin(origin + i*Point(0, 330) + j*Point(330, 0));
+			_template.moveWin(CamCtrl::origin + i*Point(0, 330) + j*Point(330, 0));
 			Target.clear();
 			if (Target.initFeature(_template, Template) == 0)
 				continue;
@@ -86,7 +87,7 @@ void autoScanning(CamCtrl _template)
 	waitKey(0);
 }
 
-void manualScanning(CamCtrl _camctrl, const double _WinWidth, const double _WinHeight)
+void manualScanning(CamCtrl &_camctrl, const double _WinWidth, const double _WinHeight)
 {
 	cout << "\tBegin the manual Scanning\n" << endl;
 	ImageFeature Template;
@@ -125,7 +126,7 @@ void manualScanning(CamCtrl _camctrl, const double _WinWidth, const double _WinH
 	}
 }
 
-void autoSacnning2(CamCtrl _camctrl, Mat &_image)
+void autoSacnning2(CamCtrl &_camctrl, Mat &_image)
 {
 	cout << "\tBegin the auto Scanning 2\n" << endl;
 	ImageFeature Template;
@@ -146,6 +147,7 @@ void autoSacnning2(CamCtrl _camctrl, Mat &_image)
 		Target.clear();
 		_itoa(num, strnum, 10);				//进行文件名编辑
 		temp = TwinName + strnum;
+		_camctrl.showImage();
 		if (Target.initFeature(_camctrl, Template) != 0)
 		{
 			Target.writeImage(temp);

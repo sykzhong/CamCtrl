@@ -4,16 +4,8 @@
 using namespace std;
 using namespace cv;
 
-namespace {
-	const double PI = 3.141592654;
-	const Scalar RED = Scalar(0, 0, 255);
-	const Scalar PINK = Scalar(230, 130, 255);
-	const Scalar BLUE = Scalar(255, 0, 0);
-	const Scalar LIGHTBLUE = Scalar(255, 255, 160);
-	const Scalar GREEN = Scalar(0, 255, 0);
-	const Scalar BLACK = Scalar(0, 0, 0);
+namespace img{
 
-	Point origin{ (682, 651) };
 }
 
 
@@ -43,7 +35,7 @@ public:
 	Point WinCenter;					//观测中心
 	double WinWidth = WinWidthMax;		//观测窗口的宽
 	double WinHeight = WinHeightMax;		//观测窗口的高
-
+	static Point origin;
 
 	void setImageAndWinName(const Mat& _image, const string& _winName);
 	void showImage() const;								//显示图片
