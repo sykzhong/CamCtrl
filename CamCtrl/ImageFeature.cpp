@@ -111,7 +111,7 @@ void ImageFeature::getFetchPoint(const ImageFeature& _template)
 void ImageFeature::getFetchAngle(const ImageFeature& _template)
 {
 	this->ComAngle = _template.ComAngle;
-	this->FetchAngle = this->ComAngle + this->Box.angle / 180 * PI;
+	this->FetchAngle = this->ComAngle + this->Box.angle/ 180 * PI;
 }
 
 void ImageFeature::writeImage(const string& _winName) const
@@ -128,10 +128,10 @@ void ImageFeature::writeImage(const string& _winName) const
 
 
 		circle(res, FetchPoint, 5, RED, -1);
-		line(res, Point(FetchPoint.x + res.cols, FetchPoint.y - res.cols * tan(FetchAngle)),
-			Point(FetchPoint.x - res.cols, FetchPoint.y + res.cols * tan(FetchAngle)), GREEN, 1);
-		line(res, Point(FetchPoint.x + res.rows * tan(FetchAngle), FetchPoint.y + res.rows),
-			Point(FetchPoint.x - res.rows * tan(FetchAngle), FetchPoint.y - res.rows), BLUE, 1);
+		line(res, Point(FetchPoint.x + res.cols, FetchPoint.y + res.cols * tan(FetchAngle)),
+			Point(FetchPoint.x - res.cols, FetchPoint.y - res.cols * tan(FetchAngle)), GREEN, 1);
+		line(res, Point(FetchPoint.x - res.rows * tan(FetchAngle), FetchPoint.y + res.rows),
+			Point(FetchPoint.x + res.rows * tan(FetchAngle), FetchPoint.y - res.rows), BLUE, 1);
 
 		//namedWindow(_winName, WINDOW_NORMAL);
 		//imshow(_winName, res);

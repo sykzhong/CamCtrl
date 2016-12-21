@@ -10,8 +10,9 @@ const double cmin = 0.7;		//轮廓提取判断的面积最小比例
 const double cmax = 1.3;		//轮廓提取判断的面积最大比例
 
 //背景HSV取值区间，这里背景设为绿色
-const int iLowH = 34;
-const int iHighH = 130;
+const int iLowH = 38;
+//const int iHighH = 130;
+const int iHighH = 86;
 
 const int iLowS = 90;
 const int iHighS = 255;

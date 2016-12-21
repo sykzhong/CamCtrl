@@ -54,10 +54,10 @@ void CamCtrl::showImage() const
 		resize(Roi, Roi, Size(WinWidthMax, WinHeightMax));
 		Point center = Point(Roi.cols / 2, Roi.rows / 2);
 
-		line(Roi, Point(center.x + Roi.cols / 2, center.y - Roi.cols / 2 * tan(FetchAngle)),
-			Point(center.x - Roi.cols / 2, center.y + Roi.cols / 2 * tan(FetchAngle)), GREEN, 2);
-		line(Roi, Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
-			Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 2);
+		line(Roi, Point(center.x + Roi.cols / 2, center.y + Roi.cols / 2 * tan(FetchAngle)),
+			Point(center.x - Roi.cols / 2, center.y - Roi.cols / 2 * tan(FetchAngle)), GREEN, 2);
+		line(Roi, Point(center.x - Roi.rows / 2 * tan(FetchAngle), center.y + Roi.rows / 2),
+			Point(center.x + Roi.rows / 2 * tan(FetchAngle), center.y - Roi.rows / 2), BLUE, 2);
 		circle(Roi, center, 5, RED, -1);
 		imshow(*WinName, Roi);
 		//cout << WinCenter << endl;
@@ -119,10 +119,10 @@ void CamCtrl::moveWin(int flags)
 		}
 		break;
 	case ROTATE_CLOCKWISE:
-		FetchAngle -= PI / 180;
+		FetchAngle += PI / 180;
 		break;
 	case ROTATE_ANTICLOCKWISE:
-		FetchAngle += PI / 180;
+		FetchAngle -= PI / 180;
 		break;
 	default:
 		break;
@@ -157,10 +157,10 @@ int CamCtrl::ctrlCamera()
 			flags = ZOOM_OUT;
 			break;
 		case 'o':
-			flags = ROTATE_ANTICLOCKWISE;
+			flags = ROTATE_CLOCKWISE;
 			break;
 		case 'p':
-			flags = ROTATE_CLOCKWISE;
+			flags = ROTATE_ANTICLOCKWISE;
 			break;
 		case 'j':
 			return SAVE_AUTO_MODE;
