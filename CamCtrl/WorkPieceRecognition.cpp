@@ -10,7 +10,7 @@ void autoSacnning2(CamCtrl &_camctrl, Mat &_image);											//½øÐÐÂÒÐòÉ¨Ãè£¬´«
 int main(int argc, char** argv)
 {
 
-	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\lm09.jpg|}");
+	CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\lm07.jpg|}");
 	//CommandLineParser parser(argc, argv, "{help h||}{@input|E:\\Cloud\\Research\\Vision\\Picture\\workpiece_v6\\gzt07.jpg|}");
 	parser.about("Application name v1.1");
 	if (parser.has("help"))

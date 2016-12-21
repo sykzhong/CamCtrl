@@ -68,8 +68,6 @@ int ImageFeature::initFeature(const CamCtrl& _target, const ImageFeature& _templ
 	}
 }
 
-
-
 void ImageFeature::getFetchPoint()
 {
 	if (!SrcImage.data)
@@ -92,8 +90,8 @@ void ImageFeature::getFetchPoint(const ImageFeature& _template)
 	//12R = [cos(theta) -sin(theta)]
 	//	  [sin(theta) cos(theta)]
 	//由1到2的变换矩阵是上述矩阵的逆
-	Point templatepos_t, targetpos_t;							//分别表示template与target相对于Box.center在椭圆坐标系中的位置
-	double templateAngle = _template.Box.angle / PI * 180;		//椭圆坐标系相对绝对坐标转动的角度
+	Point2f templatepos_t, targetpos_t;							//分别表示template与target相对于Box.center在椭圆坐标系中的位置
+	double templateAngle = _template.Box.angle / 180 * PI;		//椭圆坐标系相对绝对坐标转动的角度
 	templatepos_t.x = cos(templateAngle)*_template.ComPoint.x + sin(templateAngle)*_template.ComPoint.y;
 	templatepos_t.y = -sin(templateAngle)*_template.ComPoint.x + cos(templateAngle)*_template.ComPoint.y;
 	double rate_x, rate_y;										//模板、目标轮廓的缩放比例, dst/src
@@ -101,7 +99,7 @@ void ImageFeature::getFetchPoint(const ImageFeature& _template)
 	rate_y = this->Box.size.height / _template.Box.size.height;
 	targetpos_t.x = templatepos_t.x*rate_x;						//对目标轮廓在椭圆坐标系中相对尺寸膨胀率
 	targetpos_t.y = templatepos_t.y*rate_y;
-	double targetAngle = this->Box.angle / PI * 180;
+	double targetAngle = this->Box.angle / 180 * PI;
 	this->ComPoint.x = cos(targetAngle)*targetpos_t.x - sin(targetAngle)*targetpos_t.y;
 	this->ComPoint.y = sin(targetAngle)*targetpos_t.x + cos(targetAngle)*targetpos_t.y;
 	this->FetchPoint.x = this->ComPoint.x + this->Box.center.x;
